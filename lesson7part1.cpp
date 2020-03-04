@@ -1,7 +1,7 @@
 // lesson7part1.cpp : 
 /* 
 Name: Samantha Sax
-NetID: srs190010
+
 */
 //This program will read in data from a file indicated by a user and format that data into a bar chart that is displayed 
 //in another txt file called "saleschart.txt." Data from inputfiles will be validated using if statements. Integer division
