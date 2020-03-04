@@ -1,6 +1,6 @@
 // ProgFundHW6.cpp 
-/*Name: Samantha Sax
-NetID: srs190010
+/*
+
 Date submitted: 9/28/19
 Date due: 9/29/19
 */
