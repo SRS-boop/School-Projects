@@ -1,7 +1,7 @@
 // lesson6part2.cpp 
 
 /*Samantha Sax
-netID srs190010
+
 
 
 This program will read in a starting temperature, and ending temperature, and a value to increment the temperature by, 
