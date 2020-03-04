@@ -1,6 +1,6 @@
 /*
 Name: Samantha Sax
-NetID: srs190010
+
 
 
 This program will read in a file containing five columns and a maximum of 30 rows of grades, store those values in 
