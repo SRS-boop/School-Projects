@@ -1,5 +1,5 @@
 /*Name: Samantha Sax
-NetID: srs190010
+
 
 This program uses functions to read in data for a hypothetical product order. The user will input an order for spools of wire,
 including how many are ordered, if there is special shipping and handling fees, and how many spools are actually in stock.
