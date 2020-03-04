@@ -1,6 +1,6 @@
 /* zybooks tests.cpp
 Name: Samantha Sax
-NetID: srs190010
+
 Date Due 11/10/19
 
 This program will use modullar programming to read in a time value, and compute the distance an object can travel in that time on Earth
