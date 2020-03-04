@@ -1,0 +1,424 @@
+/* This program is a refactoring and extension of the original snake game cpp posted by my professor. The goal was to practice cleaning 
+code to make it as self-documenting as possible. My extensions include adding additional fruits to the board, making a "hard mode"
+where the walls kill you, adding pause and quit functionality, and making input case insensitive*/
+
+#include <iostream> // for cout and cin
+#include <conio.h>// for _kbhit and _getch 
+#include <windows.h> // for sleep and time
+#include <ctime>//to seed random number generator
+
+
+
+using namespace std;
+
+bool paused, doOver;//flags for pausing the game and replaying the game
+bool gameOver;//flag to end the game.
+
+
+const int maxTailLength = 100;//maximum tail length 
+const int width = 20;
+const int height = 20;//dimensions of the gameboard
+
+int SnakeHeadX, SnakeHeadY, fruitX1, fruitY1, fruitX2, fruitY2, fruitX3, fruitY3;//marks coordinates of snake head and fruit spawn location.
+int tailX[maxTailLength], tailY[maxTailLength];//array of coordiantes of tail elements
+int tailLength, score; //tail length and score
+
+enum eDirecton { STOP = 0, LEFT, RIGHT, UP, DOWN };//snake movement input variables
+eDirecton dir;
+
+
+//draw the game board and set snake in the center, random fruit spawn
+void GameBoardSetup()
+{
+	gameOver = false;
+	dir = STOP;//set direction variable to stop
+	//positions snake head coordinates in the center of the board
+	SnakeHeadX = width / 2;
+	SnakeHeadY = height / 2;
+
+
+	//spawn random fruit location coordinates
+	srand(time(0));
+	fruitX1 = rand() % width;
+	fruitY1 = rand() % height;
+	fruitX2 = rand() % width;
+	fruitY2 = rand() % height;
+	fruitX3 = rand() % width;
+	fruitY3 = rand() % height;
+	score = 0;
+}
+
+
+//prints instructions to console and gets user input for game mode
+int PrintInstructions()
+{
+	int startKey;
+	cout << "Press P to pause the game and x to quit" << endl;
+	cout << "use the WASD keys to move the snake head toward the fruits, marked by an F" << endl;
+	cout << "The more fruits you eat, the longer your tail will get, and the higher the score" << endl;
+	cout << "Try not to run into your own tail, or its Game Over" << endl;
+	cout << "The game will automatically reset after a game over." << endl;
+	cout << "Press 1 to play hard mode where the walls kills you, and 2 to play easy mode where you can teleport" << endl;
+	cin >> startKey;
+	
+	if (startKey == 1)
+	{
+		return(1);
+	
+	}
+	else if (startKey == 2)
+	{
+		return(2);
+		
+	}
+		else {
+			cout << "Invalid input. No game for you";
+			exit;	
+		} 
+	
+}
+
+
+void drawTopOrBottomRow()
+{
+	for (int rowNum = 0; rowNum < width + 2; rowNum++)
+		cout << "#";
+	cout << endl;
+}
+
+
+//fills the game board by printing appropriate things in the board(whitespace, hash, O, o, F)
+void FillGameBoard() {
+	for (int rowNum = 0; rowNum < height; rowNum++)
+	{
+		for (int colNum = 0; colNum < width; colNum++)
+		{
+			if (colNum == 0) //draw left side of the game board
+				cout << "#";
+
+			//print snake head if the (x,y) coordinates match the (row,col) index.
+			if (rowNum == SnakeHeadY && colNum == SnakeHeadX) 
+				cout << "O";
+			//print a fruit if the (x123,y123) coordinates of the fruit match the (row,col) index
+			else if ((rowNum == fruitY1 && colNum == fruitX1) || (rowNum == fruitY2 && colNum == fruitX2) || (rowNum == fruitY3 && colNum == fruitX3)) //print fruit spawn
+				cout << "F";
+			//otherwise, print a blank space, or a tail char
+			else 
+			{
+				bool printTailFlag = false;
+
+				//cout the snakes tail with o's - determined by the tailLength value (see TailExtend())
+				for (int tailSegment = 0; tailSegment < tailLength; tailSegment++)
+				{
+					//if the values in the tailX/tailY arrays match the (row,col) coordinates, cout os for the tail
+					if (tailX[tailSegment] == colNum && tailY[tailSegment] == rowNum)
+					{
+						cout << "o";
+						printTailFlag = true;
+					}
+				}
+				//otherwise print whitespace
+				if (!printTailFlag)
+					cout << " ";
+			}
+
+			//draw the right side of the boar
+			if (colNum == width - 1)//draw the right side of the board
+				cout << "#";
+		}
+		cout << endl;
+	}
+}
+
+
+void DrawGamePlay()
+{
+	//clear the output display and redraw game repeatedly
+	system("cls"); 
+	drawTopOrBottomRow();
+	FillGameBoard();
+	drawTopOrBottomRow();
+
+	//format score output
+	cout << "Score:" << score << endl;
+}
+
+
+void MakeTailFollowHead()
+{
+	//scootch each snake tail segment (x,y) coordinates along to follow the snake head
+	int prevX = tailX[0];//set this to the x coord. of the 1st element in the tail
+	int prevY = tailY[0];//set this to the y coord of the first element of the tail
+	int prev2X, prev2Y;
+
+	//replace the current tailX/Y[0] with the snakeHeadX/Y values - the first o is now printed where the snake head was before
+	tailX[0] = SnakeHeadX;
+	tailY[0] = SnakeHeadY;
+
+	//iterate through the rest of the tailX/Y[] vectors, scootching everything over using the placeholders prevX/Y and prev2X/Y
+	for (int i = 1; i < tailLength; i++)
+	{
+		prev2X = tailX[i]; //set the prev2X to the value in tailX[i]
+		prev2Y = tailY[i]; //set the prev2Y to the value in tailY[i]
+		tailX[i] = prevX;  //set the value in tailX[i] to the value in tailX[i-1] (tailX[0] for the first iteration only)
+		tailY[i] = prevY;  //set the value in tailY[i] to the value in tailY[i-1]
+		prevX = prev2X;	   //set the new prevX pr prevY to tailX[i] or tailY[i]
+		prevY = prev2Y;
+	}
+}
+
+
+//get user input for the direction (dir) variable using _kbhit and _getch functions and change the variable accordingly
+void GetSnakeDirInput()
+{
+	if (_kbhit())
+	{
+		switch (_getch())//get user input to assign direction variable (dir)
+		{
+		case 'a':
+			dir = LEFT;
+			break;
+		case 'A':
+			dir = LEFT;
+			break;
+		case 'd':
+			dir = RIGHT;
+			break;
+		case 'D':
+			dir = RIGHT;
+			break;
+		case 'w':
+			dir = UP;
+			break;
+		case 'W':
+			dir = UP;
+			break;
+		case 's':
+			dir = DOWN;
+			break;
+		case 'S':
+			dir = DOWN;
+			break;
+		
+		//quit game
+		case 'x':
+			gameOver = true;
+			exit;
+		case 'X':
+			gameOver = true;
+			exit;
+
+		//pause game
+		case 'p':
+			paused = true;
+			break;
+		case 'P':
+			paused = true;
+			break;
+
+		}
+	}
+}
+
+
+//move the snake head's coordinate variables according to the value of direction variable
+void SnakeHeadMovement() 
+{
+	switch (dir)
+	{
+	case LEFT:
+		SnakeHeadX--;
+		break;
+	case RIGHT:
+		SnakeHeadX++;
+		break;
+	case UP:
+		SnakeHeadY--;
+		break;
+	case DOWN:
+		SnakeHeadY++;
+		break;
+	default:
+		break;
+	}
+}
+
+
+//causes the snake to wrap around to the other side of the board if colliding with a wall
+void BoundsCheckEasyMode() 
+{
+	if (SnakeHeadX >= width) SnakeHeadX = 0; 
+	else if (SnakeHeadX < 0) SnakeHeadX = width - 1;
+	if (SnakeHeadY >= height) SnakeHeadY = 0; 
+	else if (SnakeHeadY < 0) SnakeHeadY = height - 1;
+}
+
+
+//causes game over when snake collides with a wall
+void BoundsCheckHardMode() 
+{
+	if (SnakeHeadX >= width) gameOver = true;
+	else if (SnakeHeadX < 0) gameOver = true;
+	if (SnakeHeadY >= height) gameOver = true; 
+	else if (SnakeHeadY < 0) gameOver = true;
+}
+
+
+//causes a gameover if the snake head hits a tail segment
+void collisionLogic() 
+{
+	for (int i = 0; i < tailLength; i++)
+		if (tailX[i] == SnakeHeadX && tailY[i] == SnakeHeadY)
+			gameOver = true;
+}
+
+
+////when the snake head coordinates match up with any of the fruit coordinates, add 10 to the score
+//and 1 to the tail length and respawn the fruit that was eaten
+void TailExtend()
+{
+	if (SnakeHeadX == fruitX1 && SnakeHeadY == fruitY1)
+	{
+		score += 10;
+		srand(time(0));
+		fruitX1 = rand() % width;
+		fruitY1 = rand() % height;
+		tailLength++;
+	}
+	else if (SnakeHeadX == fruitX2 && SnakeHeadY == fruitY2) {
+		score += 10;
+		srand(time(0));
+		fruitX2 = rand() % width;
+		fruitY2 = rand() % height;
+		tailLength++;
+	}
+	else if (SnakeHeadX == fruitX3 && SnakeHeadY == fruitY3) {
+		score += 10;
+		srand(time(0));
+		fruitX3 = rand() % width;
+		fruitY3 = rand() % height;
+		tailLength++;
+	}
+}
+
+
+//Easy mode
+void GameplayEasyMode()
+{
+	MakeTailFollowHead();
+	SnakeHeadMovement();
+	BoundsCheckEasyMode();
+	collisionLogic();
+	TailExtend();
+}
+
+
+//hard mode
+void GameplayHardMode()
+{
+	MakeTailFollowHead();
+	SnakeHeadMovement();
+	BoundsCheckHardMode();
+	collisionLogic();
+	TailExtend();
+}
+
+
+//while none of gameplay conditions are violated, run the game
+void GameOverPauseEasy()
+ {
+	while (!gameOver)
+	{
+		//if the system is paused, tell user how to unpause or quit the game
+		if (paused)
+		{
+			cout << "Press any other key to continue, or x to quit for real" << endl;
+
+			if ((_getch() == 'x') || (_getch() == 'X'))
+			{
+				doOver = false;
+					break;
+			}
+				else
+				{
+					paused = false;
+					
+				}
+		}
+		//if not paused, continue to run the game
+		else if (!paused)
+		{
+			DrawGamePlay();
+			GetSnakeDirInput();
+			GameplayEasyMode();
+			Sleep(10);
+		}
+	}
+}
+
+
+//while none of gameplay conditions are violated, run the game
+void GameOverPauseHard()
+{
+	
+	while (!gameOver)
+	{
+		if (paused)
+		{
+			cout << "Press any other key to continue, or x to quit for real" << endl;
+
+			if ((_getch() == 'x') || (_getch() == 'X'))
+			{
+				doOver = false;
+				break;
+			}
+				else
+				{
+					paused = false;
+				}
+		}
+		
+		// if not paused, continue to run the game
+		else if (!paused)
+		{
+			DrawGamePlay();
+			GetSnakeDirInput();
+			GameplayHardMode();
+			Sleep(10);
+		}
+	}
+}
+
+//main function
+int main()
+{
+	int gameMode = PrintInstructions();
+	//if the user chose hard mode, run the game where hitting the walls causes a gameOver
+	if (gameMode == 1) {
+		system("cls");
+		doOver = true;//flag for replaying the game after a game over
+		
+		while (doOver) {
+			system("cls");//clear the console and reset the gameboard
+			GameBoardSetup();
+			tailLength = 0;//reset the tail array display function by setting the upper limit of the for loop to zero
+			GameOverPauseHard();
+		}
+	}
+
+	//if the user chose easy mode, run the game where hitting the walls doesn't cause a gameOver
+	else if (gameMode == 2) {
+		system("cls");
+		doOver = true;//replay flag
+		while (doOver) {
+			system("cls");//clear the console and reset the gameboard
+			GameBoardSetup();
+			tailLength = 0;//reset the tail array display function by setting the upper limit of the for loop to zero
+			GameOverPauseEasy();
+		}
+	}
+		
+}
+
+
+
