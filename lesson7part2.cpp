@@ -1,6 +1,6 @@
 // lesson7part2.cpp : 
 /*Name: Samantha Sax
-NetID: srs1290010
+
 
 This program will read in a list of numbers from a user-specified file and calculate the average of all
 non-negative values in the list between 1 and 105. Once the file has been validated, a message specifying 
