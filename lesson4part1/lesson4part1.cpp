@@ -1,6 +1,6 @@
 /*lesson4part1.cpp
 Name: Samantha Sax
-NetID: srs190010
+
 Date Due: 10/6/19
 
 This program will calculate the weight in Newtons of an object on Earth, the Moon, and Venus, 
