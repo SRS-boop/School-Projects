@@ -1,0 +1,4 @@
+﻿  HW2 word_searchingTesting.cpp
+C:\Users\samrs\Downloads\HW2_CS1337_SamanthaSax\HW2 word_searchingTesting.cpp(128,10): warning C4101: 'ch': unreferenced local variable
+C:\Users\samrs\Downloads\HW2_CS1337_SamanthaSax\HW2 word_searchingTesting.cpp(93): warning C4715: 'getUserInFile': not all control paths return a value
+  HW2 word_searchingTesting.vcxproj -> C:\Users\samrs\Downloads\HW2_CS1337_SamanthaSax\x64\Debug\HW2 word_searchingTesting.exe
