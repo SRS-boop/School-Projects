@@ -1,7 +1,7 @@
 // lesson5part1.cpp
 /*
 Name: Samantha Sax
-NetID: srs190010
+
 Date Due:10/13/19
 
 This program will read in an input value corresponding to a menu of 3 media,then read in a distance in feet that sound has travelled
