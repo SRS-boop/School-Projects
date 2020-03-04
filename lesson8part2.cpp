@@ -1,6 +1,6 @@
 /* 
 Name: Samantha Sax
-NetID: srs190010
+
 Date due: 11/10/19
 
 This program will use functions to read in the future value, the interest rate, and the number of years, and calculate the present value
