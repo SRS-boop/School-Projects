@@ -1,6 +1,6 @@
 /*
 Name: Samantha Sax
-NetID: srs190010
+
 
 This function reads in a students' and the correct quiz answers from input files and stores that data into two parallel arrays.
 The data in the arrays are then compared for parity, and the score of the student is calculated and recorded. Incorrect student 
