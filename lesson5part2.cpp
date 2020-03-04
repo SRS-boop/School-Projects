@@ -1,7 +1,7 @@
 // lesson5part2.cpp 
 
 /*Name: Samantha Sax
-NetID: srs190010
+
 Date Due: October 13th, 2019
 
 This program will calculate the distance sound will travel through a chosen medium. It will do this by first displaying a menu
